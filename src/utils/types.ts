@@ -23,7 +23,7 @@ export interface ErrorState {
   trims: string;
   accessories: string;
 }
-interface ProcessOption {
+export interface ProcessOption {
   label: string;
   value: string;
 }

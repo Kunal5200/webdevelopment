@@ -1,5 +1,5 @@
 import { data } from "@/assests/data";
-import { FabricData } from "@/utils/types";
+import { FabricData, ProcessOption } from "@/utils/types";
 import {
   Autocomplete,
   Button,
@@ -17,9 +17,7 @@ import React, { useEffect, useState } from "react";
 
 const Fabrics = () => {
   const [value, setValue] = useState<FabricData[]>([]);
-  const [errors, setErrors] = useState<{ [key: number]: Partial<FabricData> }>(
-    {}
-  );
+  const [errors, setErrors] = useState<{ [key: number]: Partial<FabricData> }>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -44,6 +42,14 @@ const Fabrics = () => {
     field: keyof FabricData,
     newValue: any
   ) => {
+    // For processes and skippedStages, ensure the value is an array of ProcessOption objects
+    if (field === "processes" || field === "skippedStages") {
+      newValue = newValue.map((item: ProcessOption) => ({
+        value: item.value,
+        label: item.label,
+      }));
+    }
+
     setValue((prev) =>
       prev.map((item, i) =>
         i === index ? { ...item, [field]: newValue } : item
@@ -64,30 +70,29 @@ const Fabrics = () => {
     value.forEach((fabric, index) => {
       const fieldErrors: Partial<FabricData> = {};
 
-      if (!fabric.requirement) {
+      if (!fabric.requirement.trim()) {
         fieldErrors.requirement = "Requirement is required";
         isValid = false;
       }
-      if (!fabric.unit) {
+
+      if (!fabric.unit.trim()) {
         fieldErrors.unit = "Unit is required";
         isValid = false;
       }
-      if (fabric.processes.length === 0) {
-        fieldErrors.processes = "At least one process is required";
-        isValid = false;
-      }
-      if (!fabric.color) {
+
+     
+
+      if (!fabric.color.trim()) {
         fieldErrors.color = "Color is required";
         isValid = false;
       }
-      if (!fabric.quantity) {
+
+      if (!fabric.quantity.trim()) {
         fieldErrors.quantity = "Quantity is required";
         isValid = false;
       }
-      if (fabric.skippedStages.length === 0) {
-        fieldErrors.skippedStages = "At least one stage must be selected";
-        isValid = false;
-      }
+
+      
 
       if (Object.keys(fieldErrors).length > 0) {
         newErrors[index] = fieldErrors;
@@ -175,7 +180,6 @@ const Fabrics = () => {
                           {...params}
                           label="Processes*"
                           error={!!errors[i]?.processes}
-                          helperText={errors[i]?.processes}
                         />
                       )}
                       options={data.processes}
@@ -224,7 +228,6 @@ const Fabrics = () => {
                           {...params}
                           label="Stages to be skipped"
                           error={!!errors[i]?.skippedStages}
-                          helperText={errors[i]?.skippedStages}
                         />
                       )}
                       options={data.skippedStages}
